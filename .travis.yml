@@ -1,0 +1,28 @@
+language: php
+
+php:
+    - 7.0
+    - 7.1
+
+before_install:
+    - rm .env
+    - cp .env.travis .env
+    - mysql -e 'CREATE DATABASE arcturus;'
+    - mysql -u travis arcturus < database/arcturus/arcturus.sql || aborterror "Unable to import Arcturus Database"
+    - composer self-update
+    - composer install --no-interaction
+    - php artisan migrate
+
+script:
+    - vendor/bin/phpunit --coverage-clover=coverage.xml
+
+after_success:
+    - bash <(curl -s https://codecov.io/bash)
+
+branches:
+    only:
+    - development
+    - master
+
+addons:
+  mariadb: '10.0'
